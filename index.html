@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Consumo Eléctrico</title>
+    <style>
+        :root {
+            --bg-main: #F0F4F8; /* Gris azulado muy claro */
+            --primary: #2E86C1; /* Azul fuerte para contraste */
+            --secondary: #00B4D8; /* Cyan */
+            --card-bg: #FFFFFF;
+            --text-dark: #1B2631;
+            --text-light: #566573;
+            --accent-blue: #D6EAF8;
+            --danger: #EC7063;
+            --success: #52BE80;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px; /* Tamaño ideal móvil */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Cabecera mejorada */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(46, 134, 193, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pulse {
+            width: 10px;
+            height: 10px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 0 rgba(82, 190, 128, 0.7);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(82, 190, 128, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(82, 190, 128, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(82, 190, 128, 0); }
+        }
+
+        /* Métricas tipo "Dashboard" */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 18px;
+            border-bottom: 4px solid var(--accent-blue);
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .metric-card:active { transform: scale(0.95); }
+
+        .metric-card label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .metric-card .value {
+            font-size: 1.4rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        /* Sección de Barras Visuales */
+        .section-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-group { margin-bottom: 15px; }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .bar-bg {
+            background: #E5E8E8;
+            height: 14px;
+            border-radius: 7px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 7px;
+            width: 0%;
+            transition: width 1s ease-out;
+        }
+
+        /* Historial de Consumo */
+        .chart-mockup {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 120px;
+            padding-top: 10px;
+        }
+
+        .chart-col {
+            width: 12%;
+            background: var(--accent-blue);
+            border-radius: 4px 4px 0 0;
+            min-height: 10%;
+            transition: height 0.5s, background 0.3s;
+        }
+
+        .chart-col:hover { background: var(--secondary); }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1 style="margin:0; font-size: 1.3rem;">Estado de Red</h1>
+            <span id="live-clock" style="font-size: 0.8rem; opacity: 0.9;">--:--:--</span>
+        </div>
+        <div class="status-badge">
+            <div class="pulse"></div>
+            <span>En línea</span>
+        </div>
+    </header>
+
+    <div class="grid">
+        <div class="metric-card" onclick="alert('Voltaje estable en el hogar')">
+            <label>⚡ TENSIÓN</label>
+            <div class="value" id="val-v">220V</div>
+        </div>
+        <div class="metric-card" onclick="alert('Corriente total consumida ahora')">
+            <label>🔌 CORRIENTE</label>
+            <div class="value" id="val-a">8.4A</div>
+        </div>
+        <div class="metric-card">
+            <label>⏲️ FRECUENCIA</label>
+            <div class="value">50.1 Hz</div>
+        </div>
+        <div class="metric-card">
+            <label>📈 EFICIENCIA</label>
+            <div class="value">96%</div>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">📊 Uso de Potencia</div>
+        <div class="bar-group">
+            <div class="bar-label"><span>Potencia Activa</span><strong id="p1">70%</strong></div>
+            <div class="bar-bg"><div class="bar-fill" id="b1" style="width: 70%;"></div></div>
+        </div>
+        <div class="bar-group">
+            <div class="bar-label"><span>Potencia Aparente</span><strong id="p2">85%</strong></div>
+            <div class="bar-bg"><div class="bar-fill" id="b2" style="width: 85%; filter: hue-rotate(45deg);"></div></div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: var(--bg-main); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: bold;">Energía Total:</span>
+            <span style="color: var(--primary); font-weight: 800; font-size: 1.2rem;">1,542.8 kWh</span>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-title">📅 Historial 24h</div>
+        <div class="chart-mockup" id="bar-chart">
+            </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-light); margin-top: 5px;">
+            <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span>
+        </div>
+    </div>
+
+    <footer>
+        Actualizado el 14 de Mayo, 2026<br>
+        Sistema de Monitoreo Inteligente
+    </footer>
+</div>
+
+<script>
+    // Reloj dinámico
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Simulación de medidor real
+    setInterval(() => {
+        const v = (218 + Math.random() * 5).toFixed(1);
+        const a = (5 + Math.random() * 10).toFixed(1);
+        document.getElementById('val-v').innerText = v + "V";
+        document.getElementById('val-a').innerText = a + "A";
+        
+        // Mover barras un poco
+        const p1 = Math.floor(Math.random() * 30 + 50);
+        document.getElementById('b1').style.width = p1 + "%";
+        document.getElementById('p1').innerText = p1 + "%";
+    }, 4000);
+
+    // Generar gráfico de barras
+    const chart = document.getElementById('bar-chart');
+    for (let i = 0; i < 8; i++) {
+        const col = document.createElement('div');
+        col.className = 'chart-col';
+        col.style.height = Math.floor(Math.random() * 70 + 20) + '%';
+        chart.appendChild(col);
+    }
+</script>
+
+</body>
+</html>
